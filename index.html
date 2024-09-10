@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitch TTS Bot</title>
+    <script src="https://cdn.jsdelivr.net/npm/comfy.js@latest/dist/comfy.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #9146FF;
+            --secondary-color: #F0F0FF;
+            --text-color: #18181B;
+            --background-color: #EFEFF1;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #7F30E0;
+        }
+        #message-box {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .message {
+            background: var(--secondary-color);
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+        .status {
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Twitch TTS Bot</h1>
+    </header>
+    <div class="container">
+        <form id="settings-form">
+            <label for="token">Access Token:</label>
+            <input type="text" id="token" name="token" required>
+            <label for="channel">Channel Name:</label>
+            <input type="text" id="channel" name="channel" required>
+            <button type="submit">Connect</button>
+        </form>
+
+        <div id="message-box"></div>
+    </div>
+
+    <script>
+        const settingsForm = document.getElementById('settings-form');
+        const messageBox = document.getElementById('message-box');
+        let audioQueue = [];
+        let isPlaying = false;
+
+        function addMessageToBox(message, isStatus = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = isStatus ? 'message status' : 'message';
+            messageDiv.textContent = message;
+            messageBox.appendChild(messageDiv);
+            messageBox.scrollTop = messageBox.scrollHeight;
+        }
+
+        async function generateTTS(text) {
+            let speed = 1.0;
+            const speedMatch = text.match(/\[speed=([0-9.]+)\]/);
+            if (speedMatch) {
+                speed = parseFloat(speedMatch[1]);
+                text = text.replace(speedMatch[0], '').trim();
+            }
+
+            const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=${encodeURIComponent(text)}`;
+            
+            const audio = new Audio(url);
+            audio.playbackRate = speed;
+            
+            return new Promise((resolve) => {
+                audio.onended = resolve;
+                audio.play();
+            });
+        }
+
+        async function processAudioQueue() {
+            if (isPlaying || audioQueue.length === 0) return;
+            isPlaying = true;
+            while (audioQueue.length > 0) {
+                const text = audioQueue.shift();
+                await generateTTS(text);
+            }
+            isPlaying = false;
+        }
+
+        settingsForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const token = document.getElementById('token').value;
+            const channel = document.getElementById('channel').value;
+
+            if (!token || !channel) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            localStorage.setItem('twitchToken', token);
+            localStorage.setItem('twitchChannel', channel);
+
+            ComfyJS.Init(channel, token);
+            addMessageToBox(`Connected to channel: ${channel}`, true);
+        });
+
+        ComfyJS.onChat = (user, message, flags, self, extra) => {
+            addMessageToBox(`${user}: ${message}`);
+            audioQueue.push(message);
+            processAudioQueue();
+        };
+
+        ComfyJS.onConnected = () => {
+            addMessageToBox("Bot connected to Twitch chat", true);
+        };
+
+        // Check if we have stored settings and connect automatically
+        window.addEventListener('load', () => {
+            const storedToken = localStorage.getItem('twitchToken');
+            const storedChannel = localStorage.getItem('twitchChannel');
+            
+            if (storedToken && storedChannel) {
+                document.getElementById('token').value = storedToken;
+                document.getElementById('channel').value = storedChannel;
+                ComfyJS.Init(storedChannel, storedToken);
+                addMessageToBox(`Automatically connected to channel: ${storedChannel}`, true);
+            }
+        });
+    </script>
+</body>
+</html>

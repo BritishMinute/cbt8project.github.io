@@ -170,13 +170,26 @@
         });
 
         ComfyJS.onChat = (user, message, flags, self, extra) => {
+            console.log(`${user}: ${message}`);
             addMessageToBox(`${user}: ${message}`);
             audioQueue.push(message);
             processAudioQueue();
         };
 
-        ComfyJS.onConnected = () => {
-            addMessageToBox("Bot connected to Twitch chat", true);
+        ComfyJS.onCommand = (user, command, message, flags, extra) => {
+            console.log(`Command: ${command}, Message: ${message}`);
+            addMessageToBox(`Command by ${user}: !${command} ${message}`, true);
+            // You can add specific command handling here
+        };
+
+        ComfyJS.onConnected = (address, port, isFirstConnect) => {
+            console.log(`Connected to ${address}:${port}`);
+            addMessageToBox(`Bot connected to Twitch chat (${address}:${port})`, true);
+        };
+
+        ComfyJS.onError = (error) => {
+            console.error('Twitch chat error:', error);
+            addMessageToBox(`Error: ${error}`, true);
         };
 
         // Check if we have stored settings and connect automatically

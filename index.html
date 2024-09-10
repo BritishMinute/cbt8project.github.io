@@ -137,12 +137,11 @@
         }
 
         async function generateTTS(text) {
-            const voice = 'en-US-1';
             const encodedText = encodeURIComponent(text);
-            const url = `https://api.streamelements.com/kappa/v2/speech?voice=${voice}&text=${encodedText}`;
+            const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=en&client=gtx`;
 
             const audio = new Audio(url);
-            
+
             await new Promise((resolve) => {
                 audio.onended = resolve;
                 audio.onerror = (e) => {

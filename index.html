@@ -126,6 +126,7 @@
         const settingsForm = document.getElementById('settings-form');
         const messageBox = document.getElementById('message-box');
         let audioQueue = [];
+        let isPlaying = false;
 
         function addMessageToBox(message, isStatus = false) {
             const messageDiv = document.createElement('div');
@@ -135,23 +136,37 @@
             messageBox.scrollTop = messageBox.scrollHeight;
         }
 
-        function generateTTS(text) {
-            const voice = 'en';
+        async function generateTTS(text) {
             const encodedText = encodeURIComponent(text);
-            const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${voice}&q=${encodedText}`;
+            const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=gtx&q=${encodedText}&tl=en`;
 
             const audio = new Audio(url);
-            audio.play().catch(e => console.error('Audio play error:', e));
+            
+            await new Promise((resolve) => {
+                audio.onended = resolve;
+                audio.onerror = (e) => {
+                    console.error('Audio playback error:', e);
+                    resolve();
+                };
+                audio.play().catch(e => {
+                    console.error('Audio play error:', e);
+                    resolve();
+                });
+            });
         }
 
-        function processAudioQueue() {
-            if (audioQueue.length === 0) return;
-
-            const text = audioQueue.shift();
-            generateTTS(text);
-
-            // Process next item in the queue immediately for overlapping effect
-            setTimeout(processAudioQueue, 100); // Adjust timeout as needed
+        async function processAudioQueue() {
+            if (isPlaying || audioQueue.length === 0) return;
+            isPlaying = true;
+            while (audioQueue.length > 0) {
+                const text = audioQueue.shift();
+                try {
+                    await generateTTS(text);
+                } catch (error) {
+                    console.error('TTS generation error:', error);
+                }
+            }
+            isPlaying = false;
         }
 
         settingsForm.addEventListener('submit', function(event) {

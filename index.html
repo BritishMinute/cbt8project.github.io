@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cute Twitch TTS Bot</title>
     <script src="https://cdn.jsdelivr.net/npm/comfy.js@latest/dist/comfy.min.js"></script>
-    <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -137,20 +136,22 @@
             messageBox.scrollTop = messageBox.scrollHeight;
         }
 
-        function generateTTS(text) {
-            return new Promise((resolve) => {
-                if (window.responsiveVoice) {
-                    window.responsiveVoice.speak(text, "UK English Male", {
-                        onend: resolve,
-                        onerror: (e) => {
-                            console.error('Audio playback error:', e);
-                            resolve();
-                        }
-                    });
-                } else {
-                    console.error('ResponsiveVoice is not available.');
+        async function generateTTS(text) {
+            const encodedText = encodeURIComponent(text);
+            const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=en&client=gtx`;
+
+            const audio = new Audio(url);
+            
+            await new Promise((resolve) => {
+                audio.onended = resolve;
+                audio.onerror = (e) => {
+                    console.error('Audio playback error:', e);
                     resolve();
-                }
+                };
+                audio.play().catch(e => {
+                    console.error('Audio play error:', e);
+                    resolve();
+                });
             });
         }
 

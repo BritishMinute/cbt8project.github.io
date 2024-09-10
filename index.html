@@ -138,22 +138,30 @@
 
         async function generateTTS(text) {
             const encodedText = encodeURIComponent(text);
-            const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=en&client=gtx`;
-
-            const audio = new Audio(url);
-
-            await new Promise((resolve) => {
-                audio.onended = resolve;
-                audio.onerror = (e) => {
-                    console.error('Audio playback error:', e);
-                    resolve();
-                };
-                audio.play().catch(e => {
-                    console.error('Audio play error:', e);
-                    resolve();
+            const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|en`;
+        
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const audioUrl = data.responseData.translatedText;
+                
+                const audio = new Audio(audioUrl);
+                await new Promise((resolve) => {
+                    audio.onended = resolve;
+                    audio.onerror = (e) => {
+                        console.error('Audio playback error:', e);
+                        resolve();
+                    };
+                    audio.play().catch(e => {
+                        console.error('Audio play error:', e);
+                        resolve();
+                    });
                 });
-            });
+            } catch (error) {
+                console.error('TTS API request error:', error);
+            }
         }
+
 
         async function processAudioQueue() {
             if (isPlaying || audioQueue.length === 0) return;

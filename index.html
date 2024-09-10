@@ -140,19 +140,37 @@
             const encodedText = encodeURIComponent(text);
             const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=gtx&q=${encodedText}&tl=en`;
 
-            const audio = new Audio(url);
-            
-            await new Promise((resolve) => {
-                audio.onended = resolve;
-                audio.onerror = (e) => {
-                    console.error('Audio playback error:', e);
-                    resolve();
+            try {
+                const response = await fetch(url, { mode: 'cors' });
+                if (!response.ok) throw new Error('Network response was not ok');
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                
+                const audio = new Audio(audioUrl);
+
+                // Clean up the object URL once audio is done playing
+                audio.onended = () => {
+                    URL.revokeObjectURL(audioUrl);
                 };
-                audio.play().catch(e => {
-                    console.error('Audio play error:', e);
-                    resolve();
+
+                return new Promise((resolve, reject) => {
+                    audio.onended = () => {
+                        URL.revokeObjectURL(audioUrl);
+                        resolve();
+                    };
+                    audio.onerror = (e) => {
+                        console.error('Audio playback error:', e);
+                        reject(e);
+                    };
+                    audio.play().catch((e) => {
+                        console.error('Audio play error:', e);
+                        reject(e);
+                    });
                 });
-            });
+            } catch (error) {
+                console.error('TTS generation error:', error);
+                throw error;
+            }
         }
 
         async function processAudioQueue() {
@@ -195,33 +213,8 @@
         };
 
         ComfyJS.onCommand = (user, command, message, flags, extra) => {
-            console.log(`Command: ${command}, Message: ${message}`);
-            addMessageToBox(`Command by ${user}: !${command} ${message}`, true);
-            // You can add specific command handling here
+            // Handle commands here if needed
         };
-
-        ComfyJS.onConnected = (address, port, isFirstConnect) => {
-            console.log(`Connected to ${address}:${port}`);
-            addMessageToBox(`Bot connected to Twitch chat (${address}:${port})`, true);
-        };
-
-        ComfyJS.onError = (error) => {
-            console.error('Twitch chat error:', error);
-            addMessageToBox(`Error: ${error}`, true);
-        };
-
-        // Check if we have stored settings and connect automatically
-        window.addEventListener('load', () => {
-            const storedToken = localStorage.getItem('twitchToken');
-            const storedChannel = localStorage.getItem('twitchChannel');
-            
-            if (storedToken && storedChannel) {
-                document.getElementById('token').value = storedToken;
-                document.getElementById('channel').value = storedChannel;
-                ComfyJS.Init(storedChannel, storedToken);
-                addMessageToBox(`Automatically connected to channel: ${storedChannel}`, true);
-            }
-        });
     </script>
 </body>
 </html>

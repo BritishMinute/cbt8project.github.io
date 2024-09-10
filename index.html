@@ -137,34 +137,23 @@
         }
 
         async function generateTTS(text) {
-            let speed = 1.0;
-            const speedMatch = text.match(/\[speed=([0-9.]+)\]/);
-            if (speedMatch) {
-                speed = parseFloat(speedMatch[1]);
-                text = text.replace(speedMatch[0], '').trim();
-            }
+            const voice = 'en-US-1';
+            const encodedText = encodeURIComponent(text);
+            const url = `https://api.streamelements.com/kappa/v2/speech?voice=${voice}&text=${encodedText}`;
 
-            // Split text into chunks of 200 characters or less
-            const chunks = text.match(/.{1,200}/g) || [];
+            const audio = new Audio(url);
             
-            for (const chunk of chunks) {
-                const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=${encodeURIComponent(chunk)}`;
-                
-                const audio = new Audio(url);
-                audio.playbackRate = speed;
-                
-                await new Promise((resolve) => {
-                    audio.onended = resolve;
-                    audio.onerror = (e) => {
-                        console.error('Audio playback error:', e);
-                        resolve();
-                    };
-                    audio.play().catch(e => {
-                        console.error('Audio play error:', e);
-                        resolve();
-                    });
+            await new Promise((resolve) => {
+                audio.onended = resolve;
+                audio.onerror = (e) => {
+                    console.error('Audio playback error:', e);
+                    resolve();
+                };
+                audio.play().catch(e => {
+                    console.error('Audio play error:', e);
+                    resolve();
                 });
-            }
+            });
         }
 
         async function processAudioQueue() {

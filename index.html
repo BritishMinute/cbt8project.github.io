@@ -5,90 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Twitch TTS Bot</title>
     <script src="https://cdn.jsdelivr.net/npm/comfy.js@latest/dist/comfy.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #9146FF;
-            --secondary-color: #F0F0FF;
-            --text-color: #18181B;
-            --background-color: #EFEFF1;
+            --secondary-color: #41295a;
+            --text-color: #ffffff;
+            --background-color: #0e0e10;
+            --accent-color: #00ff00;
         }
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--background-color);
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--background-color), var(--secondary-color));
             color: var(--text-color);
             line-height: 1.6;
             margin: 0;
             padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            flex-grow: 1;
         }
         header {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
             text-align: center;
-            padding: 1rem 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 2rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
         h1 {
             margin: 0;
-            font-size: 2.5rem;
+            font-size: 3rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--accent-color);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
         form {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            margin-top: 30px;
         }
         label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--accent-color);
         }
         input[type="text"] {
             width: 100%;
-            padding: 8px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            font-size: 1rem;
         }
         button {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: var(--accent-color);
+            color: var(--background-color);
             border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
+            padding: 12px 20px;
+            border-radius: 5px;
             cursor: pointer;
             font-size: 1rem;
-            transition: background-color 0.3s ease;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
         }
         button:hover {
-            background-color: #7F30E0;
+            background-color: #00cc00;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,255,0,0.3);
         }
         #message-box {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            height: 400px;
             overflow-y: auto;
-            margin-top: 20px;
-            padding: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
         }
         .message {
-            background: var(--secondary-color);
-            border-radius: 4px;
-            padding: 8px;
-            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            animation: fadeIn 0.5s ease;
         }
         .status {
             font-style: italic;
-            color: #666;
+            color: var(--accent-color);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -99,9 +120,9 @@
     <div class="container">
         <form id="settings-form">
             <label for="token">Access Token:</label>
-            <input type="text" id="token" name="token" required>
+            <input type="text" id="token" name="token" required placeholder="Enter your Twitch access token">
             <label for="channel">Channel Name:</label>
-            <input type="text" id="channel" name="channel" required>
+            <input type="text" id="channel" name="channel" required placeholder="Enter the Twitch channel name">
             <button type="submit">Connect</button>
         </form>
 
@@ -130,15 +151,27 @@
                 text = text.replace(speedMatch[0], '').trim();
             }
 
-            const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=${encodeURIComponent(text)}`;
+            // Split text into chunks of 200 characters or less
+            const chunks = text.match(/.{1,200}/g) || [];
             
-            const audio = new Audio(url);
-            audio.playbackRate = speed;
-            
-            return new Promise((resolve) => {
-                audio.onended = resolve;
-                audio.play();
-            });
+            for (const chunk of chunks) {
+                const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=${encodeURIComponent(chunk)}`;
+                
+                const audio = new Audio(url);
+                audio.playbackRate = speed;
+                
+                await new Promise((resolve) => {
+                    audio.onended = resolve;
+                    audio.onerror = (e) => {
+                        console.error('Audio playback error:', e);
+                        resolve();
+                    };
+                    audio.play().catch(e => {
+                        console.error('Audio play error:', e);
+                        resolve();
+                    });
+                });
+            }
         }
 
         async function processAudioQueue() {
@@ -146,7 +179,11 @@
             isPlaying = true;
             while (audioQueue.length > 0) {
                 const text = audioQueue.shift();
-                await generateTTS(text);
+                try {
+                    await generateTTS(text);
+                } catch (error) {
+                    console.error('TTS generation error:', error);
+                }
             }
             isPlaying = false;
         }
@@ -172,7 +209,7 @@
         ComfyJS.onChat = (user, message, flags, self, extra) => {
             console.log(`${user}: ${message}`);
             addMessageToBox(`${user}: ${message}`);
-            audioQueue.push(message);
+            audioQueue.push(`${user} says: ${message}`);
             processAudioQueue();
         };
 

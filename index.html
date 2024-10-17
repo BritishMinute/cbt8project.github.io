@@ -552,66 +552,59 @@
         }
 
         async function generateTTS(text, effect = 'normal') {
-            const effectParams = voiceEffects[effect] || { speed: 1, pitch: 1, volume: 1 };
-            let url = `https://translate.google.com/translate_tts?ie=UTF-8&client=gtx&q=${encodeURIComponent(text)}&tl=en`;
-            
-            if (effectParams.speed !== 1) {
-                url += `&ttsspeed=${effectParams.speed}`;
-            }
+    // Use the original simple URL format that was working
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=gtx&q=${encodeURIComponent(text)}&tl=en&ttsspeed=1`;
+    try {
+        const response = await fetch(url, { mode: 'no-cors' });
+        if (!response.ok) throw new Error('Network response was not ok');
+        const audioBlob = await response.blob();
+        return URL.createObjectURL(audioBlob);  // Return just the URL like in the original
+    } catch (error) {
+        console.error('Error generating TTS:', error);
+        showStatus('Error generating voice', 'error');
+        return null;
+    }
+}
 
-            try {
-                const response = await fetch(url, { mode: 'no-cors' });
-                if (!response.ok) throw new Error('Network response was not ok');
-                const audioBlob = await response.blob();
-                return { url: URL.createObjectURL(audioBlob), effect: effectParams };
-            } catch (error) {
-                console.error('Error generating TTS:', error);
-                showStatus('Error generating voice', 'error');
-                return null;
-            }
+function playNextAudio() {
+    if (isPlaying || audioQueue.length === 0) return;
+    isPlaying = true;
+
+    const audioUrl = audioQueue.shift();  // Get just the URL like in the original
+    if (!audioUrl) {
+        isPlaying = false;
+        return playNextAudio();
+    }
+
+    const audio = new Audio(audioUrl);
+    audio.onended = () => {
+        isPlaying = false;
+        URL.revokeObjectURL(audioUrl);
+        playNextAudio();
+    };
+    
+    audio.play().catch(error => {
+        console.error('Error playing audio:', error);
+        showStatus('Error playing audio', 'error');
+        isPlaying = false;
+        playNextAudio();
+    });
+}
+
+ComfyJS.onChat = async (user, message, flags, self, extra) => {
+    if (!flags.bot) {
+        const { effect, text } = parseVoiceCommand(message);
+        const ttsText = `${user} says: ${text}`;
+        addMessage(user, message);
+
+        // Generate TTS and add to queue - keeping it simple like the original
+        const audioUrl = await generateTTS(ttsText);
+        if (audioUrl) {
+            audioQueue.push(audioUrl);
+            playNextAudio();
         }
-
-        function playNextAudio() {
-            if (isPlaying || audioQueue.length === 0) return;
-            isPlaying = true;
-
-            const { url, effect } = audioQueue.shift();
-            if (!url) {
-                isPlaying = false;
-                return playNextAudio();
-            }
-
-            const audio = new Audio(url);
-            audio.volume = effect.volume;
-            audio.playbackRate = effect.speed;
-            
-            audio.onended = () => {
-                isPlaying = false;
-                URL.revokeObjectURL(url);
-                playNextAudio();
-            };
-            
-            audio.play().catch(error => {
-                console.error('Error playing audio:', error);
-                showStatus('Error playing audio', 'error');
-                isPlaying = false;
-                playNextAudio();
-            });
-        }
-
-        ComfyJS.onChat = async (user, message, flags, self, extra) => {
-            if (!flags.bot) {
-                const { effect, text } = parseVoiceCommand(message);
-                const ttsText = `${user} says: ${text}`;
-                addMessage(user, message);
-
-                const audioData = await generateTTS(ttsText, effect);
-                if (audioData) {
-                    audioQueue.push(audioData);
-                    playNextAudio();
-                }
-            }
-        };
+    }
+};
 
         // Initial stats update
         updateStats();

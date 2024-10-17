@@ -3,16 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Twitch Chat TTS</title>
+    <title>Premium Twitch Chat TTS</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --primary-color: #9147ff;
-            --secondary-color: #772ce8;
-            --background-color: #18181b;
+            --primary-dark: #772ce8;
+            --secondary-color: #00ff95;
+            --background-color: #0e0e10;
             --card-color: #1f1f23;
             --text-color: #efeff1;
-            --border-radius: 8px;
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         * {
@@ -23,9 +43,12 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--background-color);
+            background: linear-gradient(45deg, #0e0e10, #1a1a1a, #2c2c2c);
+            background-size: 200% 200%;
+            animation: gradient 15s ease infinite;
             color: var(--text-color);
             line-height: 1.6;
+            min-height: 100vh;
         }
 
         #container {
@@ -36,77 +59,119 @@
 
         .header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 32px rgba(145, 71, 255, 0.2);
         }
 
         .header h1 {
-            font-size: 2.5rem;
+            font-size: 3.5rem;
             margin-bottom: 1rem;
-            color: var(--primary-color);
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
         }
 
         .card {
             background-color: var(--card-color);
             border-radius: var(--border-radius);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 48px rgba(145, 71, 255, 0.2);
         }
 
         #auth-form {
             display: grid;
-            gap: 1rem;
+            gap: 1.5rem;
         }
 
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.75rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
         }
 
         label {
             font-weight: 600;
             color: var(--text-color);
+            font-size: 1.1rem;
         }
 
         input {
-            padding: 0.75rem;
-            border: 2px solid #333;
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
             border-radius: var(--border-radius);
-            background-color: #2c2c2c;
+            background-color: rgba(255, 255, 255, 0.05);
             color: var(--text-color);
             font-size: 1rem;
-            transition: border-color 0.3s ease;
+            transition: var(--transition);
         }
 
         input:focus {
             outline: none;
             border-color: var(--primary-color);
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 4px rgba(145, 71, 255, 0.1);
         }
 
         button {
-            background-color: var(--primary-color);
+            background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
             color: white;
-            padding: 0.75rem 1.5rem;
+            padding: 1rem 2rem;
             border: none;
             border-radius: var(--border-radius);
             font-weight: 600;
+            font-size: 1.1rem;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         button:hover {
-            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(145, 71, 255, 0.4);
+        }
+
+        button i {
+            margin-right: 8px;
         }
 
         #chat-box {
-            height: 400px;
+            height: 500px;
             overflow-y: auto;
-            padding: 1rem;
+            padding: 1.5rem;
             border-radius: var(--border-radius);
-            background-color: #2c2c2c;
+            background-color: rgba(255, 255, 255, 0.05);
             scrollbar-width: thin;
-            scrollbar-color: var(--primary-color) #2c2c2c;
+            scrollbar-color: var(--primary-color) transparent;
         }
 
         #chat-box::-webkit-scrollbar {
@@ -114,7 +179,7 @@
         }
 
         #chat-box::-webkit-scrollbar-track {
-            background: #2c2c2c;
+            background: transparent;
         }
 
         #chat-box::-webkit-scrollbar-thumb {
@@ -123,81 +188,187 @@
         }
 
         .message {
-            padding: 0.5rem;
-            margin-bottom: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
             border-radius: var(--border-radius);
-            background-color: #333;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             animation: fadeIn 0.3s ease;
+            transition: var(--transition);
+        }
+
+        .message:hover {
+            transform: translateX(5px);
+            background-color: rgba(255, 255, 255, 0.08);
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .username {
             font-weight: 600;
-            color: var(--primary-color);
+            color: var(--secondary-color);
+            font-size: 1.1rem;
         }
 
         .text {
             color: var(--text-color);
+            margin-top: 0.5rem;
         }
 
         #voice-commands {
-            margin-top: 1rem;
-            padding: 1rem;
-            background-color: #2c2c2c;
-            border-radius: var(--border-radius);
+            margin-top: 2rem;
         }
 
         .commands-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .command-item {
+            background: linear-gradient(45deg, rgba(145, 71, 255, 0.1), rgba(0, 255, 149, 0.1));
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .command-item:hover {
+            transform: translateY(-3px);
+            background: linear-gradient(45deg, rgba(145, 71, 255, 0.2), rgba(0, 255, 149, 0.2));
+            box-shadow: 0 4px 20px rgba(145, 71, 255, 0.2);
+        }
+
+        .command-item i {
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+        }
+
+        .command-item span {
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
             margin-top: 1rem;
         }
 
-        .command-item {
-            background-color: #333;
-            padding: 0.5rem;
+        .stat-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
             border-radius: var(--border-radius);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .command-item i {
-            color: var(--primary-color);
-        }
-
-        #loading {
             text-align: center;
-            color: var(--primary-color);
-            font-size: 1.2rem;
+            animation: pulse 2s infinite;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .effects-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .effect-bubble {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-size: 0.9rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        #status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--text-color);
             display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .commands-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div id="container">
         <div class="header">
-            <h1>Twitch Chat TTS</h1>
-            <p>Connect your Twitch channel and bring your chat to life!</p>
+            <h1>✨ Twitch Chat TTS ✨</h1>
+            <p>Transform your chat into an interactive voice experience!</p>
         </div>
 
         <div class="card">
             <form id="auth-form">
                 <div class="input-group">
-                    <label for="channelName"><i class="fas fa-tv"></i> Twitch Channel Name</label>
-                    <input type="text" id="channelName" placeholder="Enter your Twitch channel name" required>
+                    <label for="channelName">Twitch Channel Name</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-tv"></i>
+                        <input type="text" id="channelName" placeholder="Enter your channel name" required>
+                    </div>
                 </div>
                 <div class="input-group">
-                    <label for="oauthToken"><i class="fas fa-key"></i> OAuth Token</label>
-                    <input type="password" id="oauthToken" placeholder="Enter your OAuth token" required>
+                    <label for="oauthToken">OAuth Token</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-key"></i>
+                        <input type="password" id="oauthToken" placeholder="Enter your OAuth token" required>
+                    </div>
                 </div>
-                <button type="submit"><i class="fas fa-plug"></i> Connect to Twitch Chat</button>
+                <button type="submit"><i class="fas fa-plug"></i> Connect to Chat</button>
             </form>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-chart-bar"></i> Stream Stats</h2>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="messageCount">0</div>
+                    <div class="stat-label">Messages</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="effectsUsed">0</div>
+                    <div class="stat-label">Effects Used</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="activeUsers">0</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+            </div>
         </div>
 
         <div class="card">
@@ -206,64 +377,124 @@
         </div>
 
         <div class="card" id="voice-commands">
-            <h2><i class="fas fa-microphone"></i> Available Voice Commands</h2>
+            <h2><i class="fas fa-magic"></i> Voice Effects</h2>
+            <p>Use these fun voice commands in your messages!</p>
+            
+            <div class="effects-preview">
+                <div class="effect-bubble">[robot] Beep boop!</div>
+                <div class="effect-bubble">[spooky] Boo!</div>
+                <div class="effect-bubble">[party] Woo!</div>
+            </div>
+
             <div class="commands-grid">
-                <div class="command-item">
+                <div class="command-item" onclick="previewEffect('quiet')">
                     <i class="fas fa-volume-down"></i>
-                    <span>[quiet] text</span>
+                    <span>[quiet] Whisper mode</span>
                 </div>
-                <div class="command-item">
+                <div class="command-item" onclick="previewEffect('loud')">
                     <i class="fas fa-volume-up"></i>
-                    <span>[loud] text</span>
+                    <span>[loud] Shouting mode</span>
                 </div>
-                <div class="command-item">
+                <div class="command-item" onclick="previewEffect('deep')">
                     <i class="fas fa-arrow-down"></i>
-                    <span>[deep] text</span>
+                    <span>[deep] Deep voice</span>
                 </div>
-                <div class="command-item">
+                <div class="command-item" onclick="previewEffect('high')">
                     <i class="fas fa-arrow-up"></i>
-                    <span>[high] text</span>
+                    <span>[high] High pitch</span>
                 </div>
-                <div class="command-item">
+                <div class="command-item" onclick="previewEffect('fast')">
                     <i class="fas fa-bolt"></i>
-                    <span>[fast] text</span>
+                    <span>[fast] Speed up</span>
                 </div>
-                <div class="command-item">
+                <div class="command-item" onclick="previewEffect('slow')">
                     <i class="fas fa-clock"></i>
-                    <span>[slow] text</span>
+                    <span>[slow] Slow down</span>
                 </div>
-                <div class="command-item">
+                <div class="command-item" onclick="previewEffect('robot')">
                     <i class="fas fa-robot"></i>
-                    <span>[robot] text</span>
+                    <span>[robot] Robot voice</span>
                 </div>
-                <div class="command-item">
+                <div class="command-item" onclick="previewEffect('spooky')">
                     <i class="fas fa-ghost"></i>
-                    <span>[spooky] text</span>
+                    <span>[spooky] Spooky voice</span>
+                </div>
+                <div class="command-item" onclick="previewEffect('party')">
+                    <i class="fas fa-music"></i>
+                    <span>[party] Party mode</span>
+                </div>
+                <div class="command-item" onclick="previewEffect('echo')">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>[echo] Echo effect</span>
+                </div>
+                <div class="command-item" onclick="previewEffect('alien')">
+                    <i class="fas fa-user-astronaut"></i>
+                    <span>[alien] Alien voice</span>
+                </div>
+                <div class="command-item" onclick="previewEffect('reverse')">
+                    <i class="fas fa-undo"></i>
+                    <span>[reverse] Reverse speech</span>
                 </div>
             </div>
         </div>
     </div>
 
+    <div id="status"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/comfy.js@5.1.0/dist/comfy.min.js"></script>
 
     <script>
         const chatBox = document.getElementById('chat-box');
-        const loadingIndicator = document.getElementById('loading');
         const authForm = document.getElementById('auth-form');
         const audioQueue = [];
         let isPlaying = false;
-
-        // Voice effect parameters
-        const voiceEffects = {
-            quiet: { speed: 1, pitch: 1, volume: 0.5 },
-            loud: { speed: 1, pitch: 1, volume: 1.5 },
-            deep: { speed: 0.8, pitch: 0.8, volume: 1 },
-            high: { speed: 1, pitch: 1.3, volume: 1 },
-            fast: { speed: 1.3, pitch: 1, volume: 1 },
-            slow: { speed: 0.7, pitch: 1, volume: 1 },
-            robot: { speed: 1, pitch: 1.5, volume: 1 },
-            spooky: { speed: 0.8, pitch: 0.9, volume: 0.8 }
+        let stats = {
+            messageCount: 0,
+            effectsUsed: 0,
+            activeUsers: new Set()
         };
+
+        // Enhanced voice effects with more variety
+        const voiceEffects = {
+            quiet: { speed: 0.9, pitch: 1, volume: 0.5 },
+            loud: { speed: 1.1, pitch: 1.1, volume: 1.5 },
+            deep: { speed: 0.8, pitch: 0.7, volume: 1.2 },
+            high: { speed: 1.2, pitch: 1.4, volume: 1 },
+            fast: { speed: 1.5, pitch: 1.1, volume: 1 },
+            slow: { speed: 0.6, pitch: 0.9, volume: 1 },
+            robot: { speed: 1, pitch: 1.8, volume: 1.2 },
+            spooky: { speed: 0.7, pitch: 0.7, volume: 0.8 },
+            party: { speed: 1.3, pitch: 1.3, volume: 1.3 },
+            echo: { speed: 0.9, pitch: 1.1, volume: 1.2 },
+            alien: { speed: 1.2, pitch: 1.6, volume: 0.9 },
+            reverse: { speed: 0.8, pitch: 1.2, volume: 1.1 }
+        };
+
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.display = 'block';
+            status.style.backgroundColor = type === 'error' ? 'rgba(255,0,0,0.8)' : 'rgba(0,255,149,0.8)';
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        }
+
+        function updateStats() {
+            document.getElementById('messageCount').textContent = stats.messageCount;
+            document.getElementById('effectsUsed').textContent = stats.effectsUsed;
+            document.getElementById('activeUsers').textContent = stats.activeUsers.size;
+        }
+
+        async function previewEffect(effect) {
+            const previewText = "This is a preview of the effect";
+            const audioData = await generateTTS(previewText, effect);
+            if (audioData) {
+                audioQueue.push(audioData);
+                playNextAudio();
+                showStatus(`Previewing ${effect} effect`);
+            }
+        }
 
         authForm.addEventListener('submit', function(event) {
             event.preventDefault();
@@ -271,32 +502,49 @@
             const oauthToken = document.getElementById('oauthToken').value;
             if (channelName && oauthToken) {
                 connectToTwitchChat(channelName, oauthToken);
+                showStatus(`Connected to ${channelName}'s chat!`);
             }
         });
 
         function connectToTwitchChat(channelName, oauthToken) {
             ComfyJS.Init(channelName, oauthToken);
-            addMessage('System', `Connected to ${channelName}'s chat!`);
+            addMessage('System', `🎉 Connected to ${channelName}'s chat! Voice commands are now active.`);
         }
 
         function addMessage(username, text) {
             const messageElement = document.createElement('div');
             messageElement.className = 'message';
+            
+            // Add emojis based on voice commands
+            let displayText = text;
+            Object.keys(voiceEffects).forEach(effect => {
+                const regex = new RegExp(`\\[${effect}\\]`, 'gi');
+                displayText = displayText.replace(regex, `🎵[${effect}]`);
+            });
+
             messageElement.innerHTML = `
-                <span class="username">${username}:</span> 
-                <span class="text">${text}</span>
+                <span class="username">${username}</span> 
+                <div class="text">${displayText}</div>
             `;
+            
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Update stats
+            stats.messageCount++;
+            stats.activeUsers.add(username);
+            updateStats();
         }
 
         function parseVoiceCommand(message) {
-            const commandRegex = /\[(quiet|loud|deep|high|fast|slow|robot|spooky)\]\s*(.*)/i;
+            const commandRegex = /\[(quiet|loud|deep|high|fast|slow|robot|spooky|party|echo|alien|reverse)\]\s*(.*)/i;
             const match = message.match(commandRegex);
             
             if (match) {
                 const effect = match[1].toLowerCase();
                 const text = match[2];
+                stats.effectsUsed++;
+                updateStats();
                 return { effect, text };
             }
             
@@ -304,7 +552,7 @@
         }
 
         async function generateTTS(text, effect = 'normal') {
-            const effectParams = voiceEffects[effect] || voiceEffects.normal;
+            const effectParams = voiceEffects[effect] || { speed: 1, pitch: 1, volume: 1 };
             let url = `https://translate.google.com/translate_tts?ie=UTF-8&client=gtx&q=${encodeURIComponent(text)}&tl=en`;
             
             if (effectParams.speed !== 1) {
@@ -318,6 +566,7 @@
                 return { url: URL.createObjectURL(audioBlob), effect: effectParams };
             } catch (error) {
                 console.error('Error generating TTS:', error);
+                showStatus('Error generating voice', 'error');
                 return null;
             }
         }
@@ -342,7 +591,12 @@
                 playNextAudio();
             };
             
-            audio.play();
+            audio.play().catch(error => {
+                console.error('Error playing audio:', error);
+                showStatus('Error playing audio', 'error');
+                isPlaying = false;
+                playNextAudio();
+            });
         }
 
         ComfyJS.onChat = async (user, message, flags, self, extra) => {
@@ -358,6 +612,9 @@
                 }
             }
         };
+
+        // Initial stats update
+        updateStats();
     </script>
 </body>
 </html>

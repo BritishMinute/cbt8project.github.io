@@ -441,7 +441,7 @@
 
     <div id="status"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/comfy.js@5.1.0/dist/comfy.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/comfy.js@5.1.0/dist/comfy.min.js"></script>
 
     <script>
         const chatBox = document.getElementById('chat-box');
@@ -487,7 +487,7 @@
         }
 
         async function generateTTS(text) {
-            const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&q=${encodeURIComponent(text)}&tl=en&ttsspeed=1`;
+            const url = `/api/translate?text=${encodeURIComponent(text)}&lang=en`; // Updated to use the Vercel function
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Network response was not ok');
@@ -560,7 +560,7 @@
                 displayText = displayText.replace(regex, `🎵[${effect}]`);
             });
 
-            messageElement.innerHTML = `
+            messageElement.innerHTML = ` 
                 <span class="username">${username}</span> 
                 <div class="text">${displayText}</div>
             `;
